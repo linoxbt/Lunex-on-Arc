@@ -1,38 +1,97 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const FAQ_RESPONSES: Record<string, string> = {
-  swap: "**Swap** lets you exchange USDC ↔ EURC with near-zero slippage using our Curve-style StableSwap AMM. Go to the Swap page, pick your tokens, enter an amount, and confirm. You can also adjust slippage tolerance via the gear icon.",
-  pool: "**Pool** lets you provide liquidity to the USDC/EURC pool and earn fees from every swap. You receive LP tokens representing your share. Navigate to Pool → Add Liquidity to get started.",
-  yield: "**Yield Vaults** are ERC-4626 compliant vaults for USDC and EURC. Deposit tokens to receive share tokens (luneUSDC / luneEURC) that appreciate in value as the vault earns yield.",
-  vault: "**Yield Vaults** are ERC-4626 compliant vaults for USDC and EURC. Deposit tokens to receive share tokens (luneUSDC / luneEURC) that appreciate in value as the vault earns yield.",
-  bridge: "**Bridge** lets you transfer tokens from other chains to Arc Network using Squid Router or thirdweb Pay. Select your source chain and tokens, and the bridge handles the rest.",
-  fee: "The StableSwap pool charges a small fee on each swap (visible on the swap page). This fee is distributed to liquidity providers.",
-  testnet: "Lunex Finance is live on **Arc Network Testnet**. Get testnet USDC from faucet.circle.com, add Arc Testnet to your wallet (Chain ID: 5042002), and connect.",
-  slippage: "Slippage tolerance determines the minimum amount you'll accept. Set it via the gear icon on the Swap page. Options: 0.1%, 0.5%, 1.0%, or custom. If price moves beyond your tolerance, the tx reverts.",
-  lp: "LP tokens represent your proportional share of the liquidity pool. As swap fees accumulate, your LP tokens become redeemable for more of the underlying assets.",
-  audit: "Lunex Finance is currently on testnet. A full security audit will be conducted before mainnet launch.",
-};
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-function getResponse(input: string): string {
-  const lower = input.toLowerCase();
-  for (const [key, response] of Object.entries(FAQ_RESPONSES)) {
-    if (lower.includes(key)) return response;
+async function streamChat({
+  messages,
+  onDelta,
+  onDone,
+  onError,
+}: {
+  messages: Message[];
+  onDelta: (text: string) => void;
+  onDone: () => void;
+  onError: (msg: string) => void;
+}) {
+  const resp = await fetch(CHAT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+    },
+    body: JSON.stringify({ messages }),
+  });
+
+  if (!resp.ok) {
+    const body = await resp.text();
+    try {
+      const json = JSON.parse(body);
+      onError(json.error || "Something went wrong");
+    } catch {
+      onError("Something went wrong");
+    }
+    onDone();
+    return;
   }
-  if (lower.includes("hello") || lower.includes("hi") || lower.includes("hey")) {
-    return "Hey! 👋 I'm the Lunex assistant. Ask me about **Swap**, **Pool**, **Yield Vaults**, **Bridge**, fees, slippage, or anything about the protocol!";
+
+  if (!resp.body) { onError("No response body"); onDone(); return; }
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let streamDone = false;
+
+  while (!streamDone) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let idx: number;
+    while ((idx = buffer.indexOf("\n")) !== -1) {
+      let line = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 1);
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") { streamDone = true; break; }
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch {
+        buffer = line + "\n" + buffer;
+        break;
+      }
+    }
   }
-  if (lower.includes("how") && lower.includes("start")) {
-    return "**Getting Started:**\n1. Install MetaMask\n2. Add Arc Testnet (Chain ID: 5042002, RPC: https://rpc.testnet.arc.network)\n3. Get testnet USDC from faucet.circle.com\n4. Connect your wallet on Lunex Finance\n5. Start swapping, providing liquidity, or depositing into vaults!";
+
+  if (buffer.trim()) {
+    for (let raw of buffer.split("\n")) {
+      if (!raw) continue;
+      if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+      if (raw.startsWith(":") || raw.trim() === "") continue;
+      if (!raw.startsWith("data: ")) continue;
+      const jsonStr = raw.slice(6).trim();
+      if (jsonStr === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+        if (content) onDelta(content);
+      } catch { /* ignore */ }
+    }
   }
-  return "I can help with questions about **Swap**, **Pool**, **Yield Vaults**, **Bridge**, fees, slippage, and more. Try asking something specific!";
+
+  onDone();
 }
 
 const ChatBot = () => {
@@ -41,20 +100,47 @@ const ChatBot = () => {
     { role: "assistant", content: "Hi! 👋 I'm the Lunex assistant. How can I help you today?" },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const send = () => {
-    if (!input.trim()) return;
+  const send = async () => {
+    if (!input.trim() || isLoading) return;
     const userMsg: Message = { role: "user", content: input.trim() };
-    setMessages((prev) => [...prev, userMsg]);
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
     setInput("");
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "assistant", content: getResponse(userMsg.content) }]);
-    }, 400);
+    setIsLoading(true);
+
+    let assistantSoFar = "";
+    const upsertAssistant = (chunk: string) => {
+      assistantSoFar += chunk;
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && prev.length > newMessages.length) {
+          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+        }
+        return [...prev.slice(0, newMessages.length), { role: "assistant", content: assistantSoFar }];
+      });
+    };
+
+    try {
+      await streamChat({
+        messages: newMessages,
+        onDelta: (chunk) => upsertAssistant(chunk),
+        onDone: () => setIsLoading(false),
+        onError: (msg) => {
+          setMessages((prev) => [...prev, { role: "assistant", content: `Sorry, I encountered an error: ${msg}` }]);
+          setIsLoading(false);
+        },
+      });
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I'm having trouble connecting. Please try again." }]);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -91,9 +177,11 @@ const ChatBot = () => {
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}>
-                    {msg.content.split("**").map((part, j) =>
-                      j % 2 === 1 ? <strong key={j}>{part}</strong> : <span key={j}>{part}</span>
-                    )}
+                    {msg.role === "assistant" ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:m-0 [&>ul]:m-0 [&>ol]:m-0">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : msg.content}
                   </div>
                   {msg.role === "user" && (
                     <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
@@ -102,24 +190,29 @@ const ChatBot = () => {
                   )}
                 </div>
               ))}
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
+                <div className="flex gap-2 justify-start">
+                  <div className="flex-shrink-0 h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                    <Bot className="h-3 w-3 text-primary" />
+                  </div>
+                  <div className="bg-muted text-foreground text-sm px-3 py-2 rounded-lg">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </div>
+              )}
               <div ref={bottomRef} />
             </div>
 
             <div className="border-t border-border p-3">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  send();
-                }}
-                className="flex gap-2"
-              >
+              <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex gap-2">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about Lunex..."
-                  className="flex-1 bg-muted text-foreground text-sm px-3 py-2 rounded-md border border-border focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+                  disabled={isLoading}
+                  className="flex-1 bg-muted text-foreground text-sm px-3 py-2 rounded-md border border-border focus:outline-none focus:border-primary placeholder:text-muted-foreground disabled:opacity-50"
                 />
-                <Button type="submit" size="sm" className="h-9 w-9 p-0">
+                <Button type="submit" size="sm" className="h-9 w-9 p-0" disabled={isLoading}>
                   <Send className="h-4 w-4" />
                 </Button>
               </form>

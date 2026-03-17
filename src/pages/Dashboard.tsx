@@ -46,7 +46,7 @@ const Dashboard = () => {
     <div className="container max-w-4xl mx-auto py-16">
       <div className="mb-10">
         <h1 className="text-3xl font-bold uppercase tracking-tight">Dashboard</h1>
-        <p className="text-xs text-muted-foreground tracking-wider uppercase mt-1">Lunex Finance — Your Positions</p>
+        <p className="text-xs text-muted-foreground tracking-wider uppercase mt-1">Lunex Finance | Your Positions</p>
       </div>
 
       {/* My Balances */}

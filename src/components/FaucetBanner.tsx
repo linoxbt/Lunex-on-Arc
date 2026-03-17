@@ -1,7 +1,7 @@
 const FaucetBanner = () => (
   <div className="bg-primary/5 border-b border-border text-center py-2.5 text-xs tracking-wider">
-    <span className="text-primary uppercase">Lunex Finance — Live on Arc Testnet</span>
-    <span className="text-muted-foreground"> — get USDC/EURC at </span>
+    <span className="text-primary uppercase">Lunex Finance | Live on Arc Testnet</span>
+    <span className="text-muted-foreground"> | get USDC/EURC at </span>
     <a
       href="https://faucet.circle.com"
       target="_blank"
