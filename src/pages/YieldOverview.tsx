@@ -58,7 +58,7 @@ const YieldOverview = () => {
           <div key={v.token} className={`border border-border bg-card p-6 ${v.accent === "teal" ? "gradient-teal" : "gradient-purple"}`}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-sm font-bold uppercase tracking-wider">{v.share}</h2>
-              <span className="px-3 py-1 text-xs font-bold bg-muted text-muted-foreground tracking-wider">APY: —</span>
+              <span className="px-3 py-1 text-xs font-bold bg-muted text-muted-foreground tracking-wider">APY: N/A</span>
             </div>
             <div className="space-y-3 text-sm mb-5">
               <div className="flex justify-between"><span className="text-muted-foreground text-xs uppercase tracking-wider">Total Deposited</span><span className="font-mono">${fmt(v.tvl)}</span></div>

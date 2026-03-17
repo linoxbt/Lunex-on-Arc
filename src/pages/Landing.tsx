@@ -44,7 +44,7 @@ const Landing = () => {
             <span className="inline-flex items-center gap-2 text-primary text-xs font-semibold tracking-wider uppercase group-hover:gap-3 transition-all">Start Swapping <ArrowRight className="h-3.5 w-3.5" /></span>
           </Link>
           <Link to="/yield" className="group relative overflow-hidden border border-border gradient-purple p-10 transition-all hover:border-secondary/30 glow-purple text-center md:text-left">
-            <p className="text-xs text-secondary tracking-widest uppercase mb-4">02 — YIELD</p>
+            <p className="text-xs text-secondary tracking-widest uppercase mb-4">02 / YIELD</p>
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3 uppercase tracking-tight">Earn Yield</h2>
             <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto md:mx-0 leading-relaxed">ERC-4626 vaults with auto-compounding strategies. Deposit and earn.</p>
             <span className="inline-flex items-center gap-2 text-secondary text-xs font-semibold tracking-wider uppercase group-hover:gap-3 transition-all">View Vaults <ArrowRight className="h-3.5 w-3.5" /></span>

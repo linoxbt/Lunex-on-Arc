@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ChevronDown, ChevronRight, Search } from "lucide-react";
 
 interface DocSection {
   title: string;
@@ -22,7 +22,7 @@ const docs: DocCategory[] = [
 Key features:
 • Near-zero slippage swaps between USDC and EURC
 • ERC-4626 compliant yield vaults with auto-compounding
-• On-chain transparency — all operations are verifiable on the Arc Testnet explorer
+• On-chain transparency: all operations are verifiable on the Arc Testnet explorer
 • Cross-chain bridging via Squid Router and thirdweb Pay
 
 Lunex Finance is currently live on Arc Network Testnet (Chain ID: 5042002).`,
@@ -51,23 +51,23 @@ Lunex Finance is currently live on Arc Network Testnet (Chain ID: 5042002).`,
     sections: [
       {
         title: "How Swapping Works",
-        content: `The Swap feature lets you exchange USDC for EURC and vice versa using the StableSwap invariant — a bonding curve specifically designed for assets that should trade at or near 1:1.
+        content: `The Swap feature lets you exchange USDC for EURC and vice versa using the StableSwap invariant, a bonding curve specifically designed for assets that should trade at or near 1:1.
 
 How to swap:
 1. Select the token you want to sell (From) and the token you want to receive (To)
-2. Enter the amount — the output is calculated automatically using live on-chain pricing
+2. Enter the amount. The output is calculated automatically using live on-chain pricing
 3. Review the exchange rate, price impact, and minimum received
 4. Click "Approve" to grant the contract permission to spend your tokens (first time only)
 5. Click "Swap" to execute the trade
 
-The swap is atomic — either the full trade succeeds or it reverts entirely. There is no partial fill risk.`,
+The swap is atomic: either the full trade succeeds or it reverts entirely. There is no partial fill risk.`,
       },
       {
         title: "Slippage Tolerance",
         content: `Slippage tolerance is the maximum price deviation you're willing to accept between the quoted output and the actual execution amount.
 
 Setting slippage:
-• Click the gear icon (⚙️) on the Swap page
+• Click the gear icon on the Swap page
 • Choose from presets: 0.1%, 0.5%, 1.0%
 • Or enter a custom value
 
@@ -75,22 +75,22 @@ How it works:
 The protocol calculates a "minimum received" amount based on your slippage setting. If the actual output falls below this threshold (due to other trades executing first), the transaction automatically reverts.
 
 Recommendations:
-• 0.1% — Best for stable pairs with low volatility (recommended for USDC/EURC)
-• 0.5% — Good default for moderate activity periods
-• 1.0% — Use during high-traffic periods when prices may shift quickly`,
+• 0.1%: Best for stable pairs with low volatility (recommended for USDC/EURC)
+• 0.5%: Good default for moderate activity periods
+• 1.0%: Use during high-traffic periods when prices may shift quickly`,
       },
       {
         title: "Price Impact",
         content: `Price impact measures how much your trade moves the pool's exchange rate relative to the current spot price.
 
 Impact levels:
-• Green (< 0.1%) — Excellent. Virtually no impact on the pool price.
-• Yellow (0.1% – 1.0%) — Moderate. Acceptable for most trade sizes.
-• Red (> 1.0%) — High. Consider splitting your trade into smaller amounts.
+• Green (< 0.1%): Excellent. Virtually no impact on the pool price.
+• Yellow (0.1% to 1.0%): Moderate. Acceptable for most trade sizes.
+• Red (> 1.0%): High. Consider splitting your trade into smaller amounts.
 
 The StableSwap curve is specifically designed to minimise price impact for pegged assets. For the USDC/EURC pair, most trades under $50,000 will have negligible impact.
 
-Price impact is different from slippage — impact is deterministic and based on trade size, while slippage accounts for price changes between quote and execution.`,
+Price impact is different from slippage: impact is deterministic and based on trade size, while slippage accounts for price changes between quote and execution.`,
       },
     ],
   },
@@ -102,7 +102,7 @@ Price impact is different from slippage — impact is deterministic and based on
         content: `The Pool feature allows you to deposit USDC and/or EURC into the StableSwap pool. In return, you receive LP (Liquidity Provider) tokens that represent your proportional share of the pool.
 
 Adding liquidity:
-1. Navigate to Pool → Add Liquidity
+1. Navigate to Pool > Add Liquidity
 2. Enter the amount of USDC and/or EURC you want to deposit (single-sided or dual-sided)
 3. Approve each token if this is your first interaction
 4. Click "Add Liquidity" to mint LP tokens
@@ -110,19 +110,19 @@ Adding liquidity:
 Why provide liquidity:
 • Earn a share of swap fees from every trade through the pool
 • LP tokens appreciate in value as fees accumulate
-• You can withdraw at any time — there is no lock-up period`,
+• You can withdraw at any time. There is no lock-up period`,
       },
       {
         title: "Removing Liquidity",
         content: `You can withdraw your deposited assets at any time by burning your LP tokens.
 
 How to remove:
-1. Navigate to Pool → Remove Liquidity
+1. Navigate to Pool > Remove Liquidity
 2. Select the percentage of your LP position to withdraw (25%, 50%, 75%, or 100%)
 3. Choose a withdrawal mode:
-   • Both tokens — Receive USDC and EURC proportionally
-   • USDC only — Withdraw entirely as USDC
-   • EURC only — Withdraw entirely as EURC
+   • Both tokens: Receive USDC and EURC proportionally
+   • USDC only: Withdraw entirely as USDC
+   • EURC only: Withdraw entirely as EURC
 4. Approve your LP tokens if needed
 5. Click "Remove Liquidity"
 
@@ -133,10 +133,10 @@ Single-sided withdrawals may incur slightly higher slippage as the pool rebalanc
         content: `LP tokens are standard ERC-20 tokens that represent your ownership share of the pool.
 
 How fees work:
-• Each swap through the pool charges a small fee (displayed on the Swap page)
+• Each swap through the pool charges a 0.4% fee
 • Fees are added directly to the pool's reserves
 • This increases the value of each LP token over time
-• You don't need to claim fees — they are automatically reflected in your LP token value
+• You don't need to claim fees. They are automatically reflected in your LP token value
 
 Example: If you deposit $1,000 and fees accumulate to increase the pool by 1%, your LP tokens are now redeemable for $1,010 worth of underlying assets.
 
@@ -152,28 +152,28 @@ LP tokens can also be transferred or used in other DeFi protocols (composability
         content: `Lunex yield vaults follow the ERC-4626 Tokenised Vault Standard, which provides a standardised interface for yield-bearing vaults.
 
 Available vaults:
-• USDC Vault → Deposits USDC, receives luneUSDC shares
-• EURC Vault → Deposits EURC, receives luneEURC shares
+• USDC Vault: Deposits USDC, receives luneUSDC shares
+• EURC Vault: Deposits EURC, receives luneEURC shares
 
 How it works:
 1. You deposit underlying tokens (USDC or EURC) into the vault
 2. The vault mints share tokens (luneUSDC or luneEURC) proportional to your deposit
 3. The vault's strategy generates yield on the deposited assets
-4. As yield accrues, the share price increases — each share becomes redeemable for more underlying tokens
+4. As yield accrues, the share price increases. Each share becomes redeemable for more underlying tokens
 5. When you withdraw, shares are burned and you receive the underlying tokens plus accumulated yield`,
       },
       {
         title: "Depositing & Withdrawing",
         content: `Depositing:
-1. Go to Yield → select a vault (USDC or EURC)
+1. Go to Yield > select a vault (USDC or EURC)
 2. Enter the amount you want to deposit
 3. Approve the token contract (first time only)
-4. Click "Deposit" — you'll receive share tokens in your wallet
+4. Click "Deposit". You'll receive share tokens in your wallet
 
 Withdrawing:
-1. Go to Yield → select the vault → switch to the Withdraw tab
+1. Go to Yield > select the vault > switch to the Withdraw tab
 2. Enter the amount of underlying tokens you want to receive
-3. Click "Withdraw" — your shares will be burned and you receive the underlying tokens
+3. Click "Withdraw". Your shares will be burned and you receive the underlying tokens
 
 There is no withdrawal fee or lock-up period. Withdrawals are instant and atomic.`,
       },
@@ -188,7 +188,7 @@ Example:
 • After yield accrues, share price = 1.0500 (1 share = 1.05 USDC)
 • If you hold 1,000 shares, they're now worth 1,050 USDC
 
-The share price only increases — it never decreases under normal operation. This is because the vault's strategy adds yield to the total assets without minting new shares.
+The share price only increases. It never decreases under normal operation. This is because the vault's strategy adds yield to the total assets without minting new shares.
 
 APY will be displayed on the vault detail page once sufficient on-chain data is available (mainnet).`,
       },
@@ -212,7 +212,7 @@ Quick Fund (thirdweb Pay):
 • Select Arc Network as the destination
 • Supports fiat on-ramp and cross-chain transfers
 
-Both options abstract away the complexity of cross-chain operations — you select source/destination tokens and the protocol handles the rest.`,
+Both options abstract away the complexity of cross-chain operations. You select source/destination tokens and the protocol handles the rest.`,
       },
     ],
   },
@@ -240,13 +240,13 @@ This design is optimal for stablecoin pairs because both assets are expected to 
         title: "Smart Contracts",
         content: `Lunex Finance is composed of four core smart contracts deployed on Arc Network Testnet:
 
-1. StableSwapPool — The AMM pool contract handling swaps, liquidity addition/removal, and fee calculation. Implements the StableSwap invariant with configurable amplification coefficient.
+1. StableSwapPool: The AMM pool contract handling swaps, liquidity addition/removal, and fee calculation. Implements the StableSwap invariant with configurable amplification coefficient.
 
-2. USDC Vault (ERC-4626) — A tokenised vault for USDC deposits. Mints luneUSDC share tokens. Implements the full ERC-4626 standard including deposit(), withdraw(), redeem(), convertToAssets(), and convertToShares().
+2. USDC Vault (ERC-4626): A tokenised vault for USDC deposits. Mints luneUSDC share tokens. Implements the full ERC-4626 standard including deposit(), withdraw(), redeem(), convertToAssets(), and convertToShares().
 
-3. EURC Vault (ERC-4626) — Same architecture as the USDC vault but for EURC deposits. Mints luneEURC share tokens.
+3. EURC Vault (ERC-4626): Same architecture as the USDC vault but for EURC deposits. Mints luneEURC share tokens.
 
-4. LP Token (ERC-20) — Standard ERC-20 token minted when users provide liquidity. Represents proportional pool ownership.
+4. LP Token (ERC-20): Standard ERC-20 token minted when users provide liquidity. Represents proportional pool ownership.
 
 All contracts are verified on the Arc Testnet explorer (https://testnet.arcscan.app). Contract addresses are configured in the app and can be inspected in the source code.`,
       },
@@ -255,18 +255,18 @@ All contracts are verified on the Arc Testnet explorer (https://testnet.arcscan.
         content: `ERC-4626 is an Ethereum standard for tokenised yield-bearing vaults. It provides a unified API that all vaults implement, making them composable with other DeFi protocols.
 
 Key functions:
-• deposit(assets, receiver) — Deposit underlying tokens, receive shares
-• withdraw(assets, receiver, owner) — Burn shares to receive a specific amount of underlying
-• redeem(shares, receiver, owner) — Burn a specific number of shares
-• convertToAssets(shares) — Preview how many underlying tokens shares are worth
-• convertToShares(assets) — Preview how many shares a deposit would mint
-• totalAssets() — Total underlying tokens held by the vault
-• previewDeposit(assets) / previewWithdraw(assets) — Simulate operations
+• deposit(assets, receiver): Deposit underlying tokens, receive shares
+• withdraw(assets, receiver, owner): Burn shares to receive a specific amount of underlying
+• redeem(shares, receiver, owner): Burn a specific number of shares
+• convertToAssets(shares): Preview how many underlying tokens shares are worth
+• convertToShares(assets): Preview how many shares a deposit would mint
+• totalAssets(): Total underlying tokens held by the vault
+• previewDeposit(assets) / previewWithdraw(assets): Simulate operations
 
 Benefits of ERC-4626:
-• Composability — Any protocol can integrate with the vault using the standard interface
-• Transparency — Share price and vault state are fully on-chain
-• Security — Standardised implementations reduce smart contract risk`,
+• Composability: Any protocol can integrate with the vault using the standard interface
+• Transparency: Share price and vault state are fully on-chain
+• Security: Standardised implementations reduce smart contract risk`,
       },
       {
         title: "Network & Gas",
@@ -284,7 +284,7 @@ Gas costs on Arc Testnet are minimal. Typical operations:
 • Vault Deposit: ~0.001 USDC
 • Token Approval: ~0.0005 USDC
 
-All gas fees are paid in USDC, which simplifies the user experience — no need to hold a separate gas token.`,
+All gas fees are paid in USDC, which simplifies the user experience. No need to hold a separate gas token.`,
       },
       {
         title: "Security Considerations",
@@ -316,7 +316,7 @@ Users should be aware that testnet contracts may be updated or redeployed withou
 A: Lunex Finance is on testnet. A full third-party audit will be completed before mainnet launch.
 
 Q: What fees does the protocol charge?
-A: The StableSwap pool charges a small fee on each swap (visible on the swap page). This fee goes entirely to liquidity providers. There are no protocol-level fees at this time.
+A: The StableSwap pool charges a 0.4% fee on each swap. This fee goes entirely to liquidity providers. There are no protocol-level fees at this time.
 
 Q: Can I lose money providing liquidity?
 A: While the StableSwap curve minimises impermanent loss for pegged assets, risk always exists. If one stablecoin depegs, LP positions may become imbalanced. Always do your own research.
@@ -360,24 +360,59 @@ const CollapsibleSection = ({ section }: { section: DocSection }) => {
   );
 };
 
-const Docs = () => (
-  <div className="page-fade-in container max-w-3xl mx-auto py-16">
-    <h1 className="text-3xl font-bold uppercase tracking-tight mb-2">Documentation</h1>
-    <p className="text-sm text-muted-foreground mb-10 tracking-wider">
-      Lunex Finance — Complete User & Technical Guide
-    </p>
+const Docs = () => {
+  const [search, setSearch] = useState("");
 
-    {docs.map((cat) => (
-      <div key={cat.category} className="mb-10">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-primary mb-3 px-1">{cat.category}</h2>
-        <div className="space-y-1">
-          {cat.sections.map((s) => (
-            <CollapsibleSection key={s.title} section={s} />
-          ))}
-        </div>
+  const filtered = useMemo(() => {
+    if (!search.trim()) return docs;
+    const q = search.toLowerCase();
+    return docs
+      .map((cat) => ({
+        ...cat,
+        sections: cat.sections.filter(
+          (s) =>
+            s.title.toLowerCase().includes(q) ||
+            s.content.toLowerCase().includes(q) ||
+            cat.category.toLowerCase().includes(q)
+        ),
+      }))
+      .filter((cat) => cat.sections.length > 0);
+  }, [search]);
+
+  return (
+    <div className="page-fade-in container max-w-3xl mx-auto py-16">
+      <h1 className="text-3xl font-bold uppercase tracking-tight mb-2">Documentation</h1>
+      <p className="text-sm text-muted-foreground mb-6 tracking-wider">
+        Lunex Finance: Complete User & Technical Guide
+      </p>
+
+      <div className="relative mb-10">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search documentation..."
+          className="w-full pl-10 pr-4 py-3 text-sm border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+        />
       </div>
-    ))}
-  </div>
-);
+
+      {filtered.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-8">No results found for "{search}"</p>
+      )}
+
+      {filtered.map((cat) => (
+        <div key={cat.category} className="mb-10">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-primary mb-3 px-1">{cat.category}</h2>
+          <div className="space-y-1">
+            {cat.sections.map((s) => (
+              <CollapsibleSection key={s.title} section={s} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default Docs;

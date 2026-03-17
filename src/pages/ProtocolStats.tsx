@@ -12,7 +12,7 @@ const ProtocolStats = () => {
   return (
     <div className="container max-w-3xl mx-auto py-16">
       <h1 className="text-3xl font-bold uppercase tracking-tight mb-2">Protocol Stats</h1>
-      <p className="text-xs text-muted-foreground mb-8 tracking-wider uppercase">Lunex Finance — Live Onchain Data</p>
+      <p className="text-xs text-muted-foreground mb-8 tracking-wider uppercase">Lunex Finance | Live Onchain Data</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border mb-6">
         <div className="p-5 bg-card"><div className="h-8 w-8 bg-primary/10 flex items-center justify-center mb-3"><DollarSign className="h-4 w-4 text-primary" /></div><p className="text-xs text-muted-foreground tracking-wider">TOTAL TVL</p><p className="text-xl font-bold font-mono">${fmt(totalTvl)}</p></div>
