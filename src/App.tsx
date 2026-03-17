@@ -71,6 +71,7 @@ const App = () => (
                 <AnimatedRoutes />
               </main>
               <Footer />
+              <ChatBot />
             </div>
           </BrowserRouter>
         </TooltipProvider>
