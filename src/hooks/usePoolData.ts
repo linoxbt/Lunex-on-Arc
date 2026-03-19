@@ -82,8 +82,8 @@ export function usePoolData() {
   const usdcReserve = usdcReserveRaw ? parseFloat(formatUnits(usdcReserveRaw as bigint, 6)) : 0;
   const eurcReserve = eurcReserveRaw ? parseFloat(formatUnits(eurcReserveRaw as bigint, 6)) : 0;
   const totalLiquidity = usdcReserve + eurcReserve;
-  const fee = feeRaw ? parseFloat(formatUnits(feeRaw as bigint, 8)) : 0.004;
-  const feePercent = (fee * 100).toFixed(1);
+  const fee = feeRaw ? parseFloat(formatUnits(feeRaw as bigint, 8)) : 0.04;
+  const feePercent = (fee * 100).toFixed(2);
   const lpBalance = lpBalanceRaw ? parseFloat(formatUnits(lpBalanceRaw as bigint, lpDecimals)) : 0;
   const lpTotalSupply = lpTotalSupplyRaw ? parseFloat(formatUnits(lpTotalSupplyRaw as bigint, lpDecimals)) : 0;
   const poolShare = lpTotalSupply > 0 ? (lpBalance / lpTotalSupply) * 100 : 0;
