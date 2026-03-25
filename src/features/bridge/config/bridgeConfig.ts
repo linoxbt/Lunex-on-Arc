@@ -13,7 +13,7 @@ export const baseSepolia = defineChain({
   testnet: true,
 });
 
-export type BridgeChainKey = "base" | "arc";
+export type BridgeChainKey = "base" | "arc" | "ethereum" | "arbitrum" | "avalanche" | "polygon";
 
 export interface BridgeChainConfig {
   key: BridgeChainKey;
@@ -27,6 +27,36 @@ export interface BridgeChainConfig {
 }
 
 export const BRIDGE_CHAINS: Record<BridgeChainKey, BridgeChainConfig> = {
+  ethereum: {
+    key: "ethereum",
+    label: "Ethereum Sepolia",
+    domain: 0,
+    chainId: 11155111,
+    tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    explorerUrl: "https://sepolia.etherscan.io",
+  },
+  avalanche: {
+    key: "avalanche",
+    label: "Avalanche Fuji",
+    domain: 1,
+    chainId: 43113,
+    tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    usdc: "0x5425890298aed601595a70AB815c96711a31Bc65",
+    explorerUrl: "https://testnet.snowtrace.io",
+  },
+  arbitrum: {
+    key: "arbitrum",
+    label: "Arbitrum Sepolia",
+    domain: 3,
+    chainId: 421614,
+    tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    usdc: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    explorerUrl: "https://sepolia.arbiscan.io",
+  },
   base: {
     key: "base",
     label: "Base Sepolia",
@@ -36,6 +66,16 @@ export const BRIDGE_CHAINS: Record<BridgeChainKey, BridgeChainConfig> = {
     messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
     usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
     explorerUrl: "https://sepolia.basescan.org",
+  },
+  polygon: {
+    key: "polygon",
+    label: "Polygon Amoy",
+    domain: 7,
+    chainId: 80002,
+    tokenMessenger: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    messageTransmitter: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275",
+    usdc: "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+    explorerUrl: "https://amoy.polygonscan.com",
   },
   arc: {
     key: "arc",
@@ -48,6 +88,8 @@ export const BRIDGE_CHAINS: Record<BridgeChainKey, BridgeChainConfig> = {
     explorerUrl: "https://testnet.arcscan.app",
   },
 };
+
+export const BRIDGE_CHAIN_KEYS = Object.keys(BRIDGE_CHAINS) as BridgeChainKey[];
 
 export const IRIS_API_URL = "https://iris-api-sandbox.circle.com/v2/attestations";
 
@@ -102,6 +144,13 @@ export const ERC20_APPROVE_ABI = [
       { name: "owner", type: "address" },
       { name: "value", type: "address" },
     ],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    name: "balanceOf",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "account", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
   },
 ] as const;
