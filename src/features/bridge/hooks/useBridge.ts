@@ -102,6 +102,7 @@ export function useBridge() {
           abi: TOKEN_MESSENGER_ABI,
           functionName: "depositForBurn",
           args: [parsedAmount, to.domain, mintRecipient, from.usdc],
+          chain: walletClient.chain,
         });
 
         const burnReceipt = await publicClient.waitForTransactionReceipt({ hash: burnHash });
