@@ -168,6 +168,8 @@ export function useBridge() {
         abi: MESSAGE_TRANSMITTER_ABI,
         functionName: "receiveMessage",
         args: [bridgeTx.messageBytes as `0x${string}`, attestation.attestation as `0x${string}`],
+        chain: walletClient.chain,
+        account: address!,
       });
 
       await publicClient.waitForTransactionReceipt({ hash: mintHash });
