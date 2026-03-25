@@ -1,6 +1,6 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { defineChain } from "viem";
-import { baseSepolia as viemBaseSepolia } from "viem/chains";
+import { baseSepolia as viemBaseSepolia, sepolia, arbitrumSepolia, avalancheFuji, polygonAmoy } from "viem/chains";
 
 export const arcTestnet = defineChain({
   id: 5042002,
