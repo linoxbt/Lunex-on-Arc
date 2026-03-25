@@ -49,5 +49,5 @@ export const getExplorerAddressUrl = (addr: string) => `${EXPLORER_URL}/address/
 export const wagmiConfig = getDefaultConfig({
   appName: "Lunex Finance",
   projectId: "lunex-protocol-demo",
-  chains: [arcTestnet],
+  chains: [arcTestnet, viemBaseSepolia],
 });
