@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAccount } from "wagmi";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useBridge } from "@/features/bridge/hooks/useBridge";
+import { useBridgeBalance } from "@/features/bridge/hooks/useBridgeBalance";
 import { ChainSelector } from "@/features/bridge/components/ChainSelector";
 import { BridgeProgress } from "@/features/bridge/components/BridgeProgress";
+import { BridgeHistory } from "@/features/bridge/components/BridgeHistory";
 import { getPendingBridgeTransactions } from "@/features/bridge/state/bridgeState";
 import type { BridgeChainKey } from "@/features/bridge/config/bridgeConfig";
 
@@ -19,6 +21,9 @@ const Bridge = () => {
   const [toChain, setToChain] = useState<BridgeChainKey>("arc");
   const [amount, setAmount] = useState("");
 
+  const { formatted: sourceBalance, isLoading: balanceLoading } =
+    useBridgeBalance(fromChain);
+
   // Check for resumable transactions on mount
   useEffect(() => {
     const pending = getPendingBridgeTransactions();
@@ -30,6 +35,20 @@ const Bridge = () => {
   const handleSwapChains = () => {
     setFromChain(toChain);
     setToChain(fromChain);
+  };
+
+  const handleFromChange = (chain: BridgeChainKey) => {
+    setFromChain(chain);
+    if (chain === toChain) {
+      setToChain(fromChain);
+    }
+  };
+
+  const handleToChange = (chain: BridgeChainKey) => {
+    setToChain(chain);
+    if (chain === fromChain) {
+      setFromChain(toChain);
+    }
   };
 
   const handleBridge = () => {
@@ -47,7 +66,7 @@ const Bridge = () => {
     <div className="container max-w-lg mx-auto py-16 px-4">
       <h1 className="text-3xl font-bold uppercase tracking-tight mb-1">Bridge</h1>
       <p className="text-xs text-muted-foreground mb-8 tracking-wider">
-        Bridge USDC between Base and Arc Network via Circle CCTP
+        Bridge USDC across chains via Circle CCTP
       </p>
 
       {/* Bridge form */}
@@ -56,8 +75,25 @@ const Bridge = () => {
           <ChainSelector
             fromChain={fromChain}
             toChain={toChain}
+            onFromChange={handleFromChange}
+            onToChange={handleToChange}
             onSwap={handleSwapChains}
           />
+
+          {/* Balance display */}
+          {isConnected && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 border border-border">
+              <Wallet className="h-3.5 w-3.5" />
+              <span>Balance:</span>
+              {balanceLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <span className="font-mono text-foreground font-semibold">
+                  {sourceBalance} USDC
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
@@ -130,6 +166,11 @@ const Bridge = () => {
             {bridge.status === "minting" && "Minting USDC on destination..."}
           </span>
         </div>
+      )}
+
+      {/* Bridge History */}
+      {!isActive && (
+        <BridgeHistory onResume={(tx) => bridge.resumeBridge(tx)} />
       )}
     </div>
   );
