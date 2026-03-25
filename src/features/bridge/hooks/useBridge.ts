@@ -88,6 +88,7 @@ export function useBridge() {
           abi: ERC20_APPROVE_ABI,
           functionName: "approve",
           args: [from.tokenMessenger, parsedAmount],
+          chain: walletClient.chain,
         });
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
 
