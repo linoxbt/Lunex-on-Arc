@@ -113,13 +113,13 @@ export function useBridge() {
         let messageBytes: `0x${string}` | undefined;
         for (const log of burnReceipt.logs) {
           try {
-            const decoded = decodeEventLog({
+            const decoded: any = decodeEventLog({
               abi: MESSAGE_SENT_EVENT_ABI,
               data: log.data,
               topics: (log as any).topics ?? [],
             });
             if (decoded.eventName === "MessageSent") {
-              messageBytes = (decoded.args as any).message as `0x${string}`;
+              messageBytes = decoded.args.message as `0x${string}`;
               break;
             }
           } catch {
