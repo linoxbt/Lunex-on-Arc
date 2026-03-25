@@ -114,10 +114,10 @@ export function useBridge() {
             const decoded = decodeEventLog({
               abi: MESSAGE_SENT_EVENT_ABI,
               data: log.data,
-              topics: log.topics,
+              topics: (log as any).topics ?? [],
             });
             if (decoded.eventName === "MessageSent") {
-              messageBytes = decoded.args.message as `0x${string}`;
+              messageBytes = (decoded.args as any).message as `0x${string}`;
               break;
             }
           } catch {
