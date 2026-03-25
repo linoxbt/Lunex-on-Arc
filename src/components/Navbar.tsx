@@ -13,6 +13,7 @@ const navLinks = [
   { to: "/bridge", label: "BRIDGE" },
   { to: "/stats", label: "STATS" },
   { to: "/dashboard", label: "DASHBOARD" },
+  { to: "/docs", label: "DOCS" },
 ];
 
 const Navbar = () => {
