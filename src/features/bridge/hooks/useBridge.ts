@@ -89,6 +89,7 @@ export function useBridge() {
           functionName: "approve",
           args: [from.tokenMessenger, parsedAmount],
           chain: walletClient.chain,
+          account: address,
         });
         await publicClient.waitForTransactionReceipt({ hash: approveHash });
 
